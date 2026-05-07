@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 const weeks = [
   {
     week: 1,
+    start: "2026-05-05", end: "2026-05-11",
     dates: "5–11 May",
     theme: "Wake Up the Legs",
     sessions: [
@@ -14,6 +15,7 @@ const weeks = [
   },
   {
     week: 2,
+    start: "2026-05-12", end: "2026-05-18",
     dates: "12–18 May",
     theme: "Finding Your Rhythm",
     sessions: [
@@ -26,6 +28,7 @@ const weeks = [
   },
   {
     week: 3,
+    start: "2026-05-19", end: "2026-05-25",
     dates: "19–25 May",
     theme: "Building Base",
     sessions: [
@@ -37,6 +40,7 @@ const weeks = [
   },
   {
     week: 4,
+    start: "2026-05-26", end: "2026-06-01",
     dates: "26 May–1 Jun",
     theme: "Pushing Further",
     sessions: [
@@ -49,6 +53,7 @@ const weeks = [
   },
   {
     week: 5,
+    start: "2026-06-02", end: "2026-06-08",
     dates: "2–8 Jun",
     theme: "Halfway There",
     sessions: [
@@ -60,6 +65,7 @@ const weeks = [
   },
   {
     week: 6,
+    start: "2026-06-09", end: "2026-06-15",
     dates: "9–15 Jun",
     theme: "Getting Serious",
     sessions: [
@@ -72,6 +78,7 @@ const weeks = [
   },
   {
     week: 7,
+    start: "2026-06-16", end: "2026-06-22",
     dates: "16–22 Jun",
     theme: "Endurance Mode",
     sessions: [
@@ -83,6 +90,7 @@ const weeks = [
   },
   {
     week: 8,
+    start: "2026-06-23", end: "2026-06-29",
     dates: "23–29 Jun",
     theme: "Consolidating",
     sessions: [
@@ -95,6 +103,7 @@ const weeks = [
   },
   {
     week: 9,
+    start: "2026-06-30", end: "2026-07-06",
     dates: "30 Jun–6 Jul",
     theme: "100 Mile Confidence Builder",
     sessions: [
@@ -106,6 +115,7 @@ const weeks = [
   },
   {
     week: 10,
+    start: "2026-07-07", end: "2026-07-13",
     dates: "7–13 Jul",
     theme: "Taper — Let It Sink In",
     sessions: [
@@ -117,6 +127,7 @@ const weeks = [
   },
   {
     week: 11,
+    start: "2026-07-14", end: "2026-07-25",
     dates: "14–25 Jul",
     theme: "Race Week",
     sessions: [
@@ -137,6 +148,17 @@ const TYPE = {
   event: { color: "#DC2626", bg: "#FEF2F2", label: "RACE",    icon: "🏆" },
 };
 
+function getCurrentWeekIndex() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return weeks.findIndex((w) => {
+    const start = new Date(w.start);
+    const end = new Date(w.end);
+    end.setHours(23, 59, 59, 999);
+    return today >= start && today <= end;
+  });
+}
+
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 
@@ -151,10 +173,20 @@ const CSS = `
     box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
     overflow: hidden;
     margin-bottom: 10px;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
   }
   .t-card:hover {
     box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+  }
+  .t-card-current {
+    border: 2px solid #1D4ED8 !important;
+    box-shadow: 0 0 0 4px rgba(29,78,216,0.08), 0 4px 16px rgba(29,78,216,0.1) !important;
+  }
+  .t-card-past {
+    opacity: 0.55;
+  }
+  .t-card-past:hover {
+    opacity: 0.75;
   }
 
   .t-wbtn {
@@ -185,10 +217,20 @@ const CSS = `
 
   .t-chevron { transition: transform 0.2s ease; }
   .t-chevron-open { transform: rotate(180deg); }
+
+  @keyframes t-badge-in {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .t-this-week-badge {
+    animation: t-badge-in 0.3s ease forwards;
+  }
 `;
 
 export default function TrainingCalendar() {
-  const [expanded, setExpanded] = useState(null);
+  const currentWeekIndex = getCurrentWeekIndex();
+
+  const [expanded, setExpanded] = useState(() => currentWeekIndex);
   const [completedSessions, setCompletedSessions] = useState(() => {
     try { return JSON.parse(localStorage.getItem("training-progress") || "{}"); }
     catch { return {}; }
@@ -246,7 +288,7 @@ export default function TrainingCalendar() {
           lineHeight: 1.05,
           color: "#111",
         }}>
-          Road to 117 Miles
+          Dunwich Dynamo
         </h1>
 
         <p style={{
@@ -339,17 +381,54 @@ export default function TrainingCalendar() {
         {weeks.map((week, wi) => {
           const isOpen = expanded === wi;
           const isRace = wi === 10;
+          const isCurrent = wi === currentWeekIndex;
+          const isPast = currentWeekIndex !== -1 && wi < currentWeekIndex;
           const weekDone = week.sessions.every((_, si) => completedSessions[`${wi}-${si}`]);
+
+          const cardClass = [
+            "t-card",
+            isCurrent ? "t-card-current" : "",
+            isPast ? "t-card-past" : "",
+          ].filter(Boolean).join(" ");
 
           return (
             <div
               key={wi}
-              className="t-card"
+              className={cardClass}
               style={{
-                border: isRace ? "1px solid #FECACA" : "1px solid #E4E2DD",
-                background: isRace && !isOpen ? "#FFFBFB" : "#fff",
+                background: isRace && !isCurrent ? "#FFFBFB" : "#fff",
               }}
             >
+              {/* THIS WEEK banner */}
+              {isCurrent && (
+                <div
+                  className="t-this-week-badge"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "7px 16px",
+                    background: "#1D4ED8",
+                  }}
+                >
+                  <div style={{
+                    width: "6px", height: "6px",
+                    borderRadius: "50%",
+                    background: "#fff",
+                    opacity: 0.8,
+                  }} />
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    color: "#fff",
+                    textTransform: "uppercase",
+                  }}>
+                    This Week
+                  </span>
+                </div>
+              )}
+
               {/* Week header */}
               <button
                 className="t-wbtn"
@@ -376,15 +455,18 @@ export default function TrainingCalendar() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: isRace ? "#FEE2E2"
+                  background: isCurrent ? "#EFF6FF"
+                    : isRace ? "#FEE2E2"
                     : weekDone ? "#DCFCE7"
                     : "#F2F1ED",
                   fontSize: isRace ? "20px" : "13px",
                   fontWeight: 700,
                   fontFamily: "'Syne', sans-serif",
-                  color: isRace ? "#DC2626"
+                  color: isCurrent ? "#1D4ED8"
+                    : isRace ? "#DC2626"
                     : weekDone ? "#16A34A"
                     : "#7B7870",
+                  border: isCurrent ? "1.5px solid #BFDBFE" : "none",
                 }}>
                   {isRace ? "🏁" : weekDone ? "✓" : `W${week.week}`}
                 </div>
@@ -396,7 +478,10 @@ export default function TrainingCalendar() {
                     fontWeight: 600,
                     lineHeight: 1.25,
                     marginBottom: "3px",
-                    color: isRace ? "#DC2626" : weekDone ? "#16A34A" : "#1A1917",
+                    color: isCurrent ? "#1D4ED8"
+                      : isRace ? "#DC2626"
+                      : weekDone ? "#16A34A"
+                      : "#1A1917",
                   }}>
                     {week.theme}
                   </div>
@@ -431,7 +516,7 @@ export default function TrainingCalendar() {
                 <svg
                   width="16" height="16" viewBox="0 0 16 16" fill="none"
                   className={`t-chevron${isOpen ? " t-chevron-open" : ""}`}
-                  style={{ flexShrink: 0, color: "#B0ADA6" }}
+                  style={{ flexShrink: 0, color: isCurrent ? "#93C5FD" : "#B0ADA6" }}
                 >
                   <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -439,7 +524,7 @@ export default function TrainingCalendar() {
 
               {/* Sessions */}
               {isOpen && (
-                <div style={{ borderTop: "1px solid #F0EEE9" }}>
+                <div style={{ borderTop: `1px solid ${isCurrent ? "#DBEAFE" : "#F0EEE9"}` }}>
                   {week.sessions.map((session, si) => {
                     const key = `${wi}-${si}`;
                     const done = completedSessions[key];
