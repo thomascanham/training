@@ -129,31 +129,73 @@ const weeks = [
   },
 ];
 
-const typeColors = {
-  bike: { bg: "#1a3a5c", accent: "#4a9eff", icon: "🚴" },
-  run: { bg: "#2d1a4a", accent: "#b06eff", icon: "🏃" },
-  ride: { bg: "#0d3320", accent: "#3ddd8a", icon: "🚴" },
-  rest: { bg: "#2a2a1a", accent: "#f5c842", icon: "😴" },
-  event: { bg: "#3a0a0a", accent: "#ff4a4a", icon: "🏆" },
+const TYPE = {
+  bike:  { color: "#1D4ED8", bg: "#EFF6FF", label: "ZWIFT",   icon: "⚡" },
+  run:   { color: "#7C3AED", bg: "#F5F3FF", label: "RUN",     icon: "🏃" },
+  ride:  { color: "#16A34A", bg: "#F0FDF4", label: "OUTDOOR", icon: "🚴" },
+  rest:  { color: "#B45309", bg: "#FFFBEB", label: "REST",    icon: "😴" },
+  event: { color: "#DC2626", bg: "#FEF2F2", label: "RACE",    icon: "🏆" },
 };
 
-const typeLabel = {
-  bike: "Zwift",
-  run: "Run",
-  ride: "Outdoor",
-  rest: "Rest",
-  event: "EVENT",
-};
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #F2F1ED; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  .t-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E4E2DD;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s ease;
+  }
+  .t-card:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .t-wbtn {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: background 0.12s ease;
+  }
+  .t-wbtn:active { background: #FAFAF8 !important; }
+  .t-wbtn:focus-visible { outline: 2px solid #1D4ED8; outline-offset: -2px; }
+
+  .t-sess {
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s ease;
+    cursor: pointer;
+  }
+  .t-sess:hover { background: #FAFAF8 !important; }
+  .t-sess:active { background: #F2F1ED !important; }
+
+  .t-chk { transition: all 0.18s cubic-bezier(0.34,1.56,0.64,1); }
+
+  @keyframes t-pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .t-chk-done { animation: t-pop 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  .t-prog { transition: width 0.55s cubic-bezier(0.4,0,0.2,1); }
+
+  .t-chevron { transition: transform 0.2s ease; }
+  .t-chevron-open { transform: rotate(180deg); }
+`;
 
 export default function TrainingCalendar() {
   const [expanded, setExpanded] = useState(null);
   const [completedSessions, setCompletedSessions] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('training-progress') || '{}'); }
+    try { return JSON.parse(localStorage.getItem("training-progress") || "{}"); }
     catch { return {}; }
   });
 
   useEffect(() => {
-    localStorage.setItem('training-progress', JSON.stringify(completedSessions));
+    localStorage.setItem("training-progress", JSON.stringify(completedSessions));
   }, [completedSessions]);
 
   const toggleSession = (key) => {
@@ -171,188 +213,330 @@ export default function TrainingCalendar() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#0a0e14",
-      fontFamily: "'Georgia', serif",
-      color: "#e8e0d0",
-      padding: "0 0 60px",
+      background: "#F2F1ED",
+      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      color: "#1A1917",
     }}>
-      {/* Header */}
+      <style>{CSS}</style>
+
+      {/* ── Header ─────────────────────────────────────── */}
       <div style={{
-        background: "linear-gradient(135deg, #0d1f35 0%, #0a0e14 60%, #1a0d0d 100%)",
-        borderBottom: "1px solid #1e2a38",
-        padding: "40px 24px 32px",
+        background: "#fff",
+        borderBottom: "1px solid #E4E2DD",
+        padding: "36px 16px 28px",
         textAlign: "center",
-        position: "relative",
-        overflow: "hidden",
       }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(circle at 20% 50%, rgba(74,158,255,0.07) 0%, transparent 60%), radial-gradient(circle at 80% 50%, rgba(61,221,138,0.05) 0%, transparent 60%)",
-        }} />
-        <p style={{ margin: "0 0 8px", fontSize: "11px", letterSpacing: "4px", color: "#4a9eff", textTransform: "uppercase", fontFamily: "'Courier New', monospace" }}>
-          11-WEEK PLAN · MAY–JULY 2026
-        </p>
-        <h1 style={{ margin: "0 0 6px", fontSize: "clamp(26px, 5vw, 42px)", fontWeight: "normal", letterSpacing: "-1px", color: "#f0ece4" }}>
-          Road to 117 Miles
-        </h1>
-        <p style={{ margin: "0 0 28px", fontSize: "14px", color: "#7a8fa6", fontStyle: "italic" }}>
-          Bike · Run · Zwift · 25th July 2026
+        <p style={{
+          margin: "0 0 8px",
+          fontSize: "11px",
+          fontWeight: 600,
+          letterSpacing: "0.13em",
+          color: "#A09D96",
+          textTransform: "uppercase",
+        }}>
+          11-week plan · May–July 2026
         </p>
 
-        {/* Progress bar */}
-        <div style={{ maxWidth: "340px", margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "11px", color: "#5a7a9a", fontFamily: "'Courier New', monospace", letterSpacing: "1px" }}>
-            <span>SESSIONS LOGGED</span>
-            <span>{completedCount} / {totalSessions}</span>
+        <h1 style={{
+          margin: "0 0 4px",
+          fontFamily: "'Syne', sans-serif",
+          fontSize: "clamp(30px, 8vw, 46px)",
+          fontWeight: 800,
+          letterSpacing: "-0.025em",
+          lineHeight: 1.05,
+          color: "#111",
+        }}>
+          Road to 117 Miles
+        </h1>
+
+        <p style={{
+          margin: "0 0 26px",
+          fontSize: "14px",
+          color: "#A09D96",
+          fontWeight: 400,
+        }}>
+          Bike · Run · Zwift · 25 July 2026
+        </p>
+
+        {/* Progress */}
+        <div style={{ maxWidth: "380px", margin: "0 auto" }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginBottom: "8px",
+          }}>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#1A1917" }}>
+              Progress
+            </span>
+            <span style={{ fontSize: "13px", color: "#6B6860" }}>
+              <span style={{ fontWeight: 700, color: "#1A1917" }}>{completedCount}</span>
+              /{totalSessions} sessions
+            </span>
           </div>
-          <div style={{ height: "4px", background: "#1a2535", borderRadius: "2px", overflow: "hidden" }}>
-            <div style={{
-              height: "100%", width: `${progress}%`,
-              background: "linear-gradient(90deg, #4a9eff, #3ddd8a)",
-              transition: "width 0.4s ease",
-              borderRadius: "2px",
+
+          <div style={{
+            height: "8px",
+            background: "#ECEAE5",
+            borderRadius: "100px",
+            overflow: "hidden",
+          }}>
+            <div className="t-prog" style={{
+              height: "100%",
+              width: `${progress}%`,
+              background: progress === 100
+                ? "linear-gradient(90deg, #16A34A, #15803D)"
+                : "linear-gradient(90deg, #1D4ED8 0%, #16A34A 100%)",
+              borderRadius: "100px",
             }} />
           </div>
-          <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#3ddd8a", fontFamily: "'Courier New', monospace" }}>{progress}% COMPLETE</p>
+
+          <p style={{
+            margin: "7px 0 0",
+            fontSize: "12px",
+            fontWeight: 600,
+            textAlign: "right",
+            color: progress > 0 ? "#16A34A" : "#A09D96",
+          }}>
+            {progress === 0
+              ? "Tap any session to mark it done"
+              : progress === 100
+              ? "All sessions complete!"
+              : `${progress}% complete`}
+          </p>
         </div>
       </div>
 
-      {/* Legend */}
-      <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap", padding: "20px 16px 8px" }}>
-        {[["bike", "Zwift"], ["ride", "Outdoor Ride"], ["run", "Running"], ["event", "Race Day"]].map(([t, l]) => (
-          <div key={t} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#7a8fa6", letterSpacing: "1px", fontFamily: "'Courier New', monospace" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: typeColors[t].accent }} />
-            {l.toUpperCase()}
+      {/* ── Legend ─────────────────────────────────────── */}
+      <div style={{
+        display: "flex",
+        gap: "18px",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        padding: "14px 16px 8px",
+      }}>
+        {[["bike","Zwift"],["ride","Outdoor"],["run","Running"],["event","Race Day"]].map(([t, l]) => (
+          <div key={t} style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "12px",
+            fontWeight: 500,
+            color: "#6B6860",
+          }}>
+            <div style={{
+              width: "8px", height: "8px",
+              borderRadius: "50%",
+              background: TYPE[t].color,
+            }} />
+            {l}
           </div>
         ))}
       </div>
 
-      {/* Weeks */}
-      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "12px 16px 0" }}>
+      {/* ── Week cards ─────────────────────────────────── */}
+      <div style={{ padding: "8px 16px 56px", maxWidth: "640px", margin: "0 auto" }}>
         {weeks.map((week, wi) => {
           const isOpen = expanded === wi;
-          const isRaceWeek = wi === 10;
-          const weekCompleted = week.sessions.every((_, si) => completedSessions[`${wi}-${si}`]);
+          const isRace = wi === 10;
+          const weekDone = week.sessions.every((_, si) => completedSessions[`${wi}-${si}`]);
 
           return (
-            <div key={wi} style={{
-              marginBottom: "10px",
-              border: `1px solid ${isRaceWeek ? "#ff4a4a44" : "#1e2a38"}`,
-              borderRadius: "10px",
-              overflow: "hidden",
-              background: isRaceWeek ? "rgba(58,10,10,0.3)" : "rgba(255,255,255,0.02)",
-              transition: "border-color 0.2s",
-            }}>
+            <div
+              key={wi}
+              className="t-card"
+              style={{
+                border: isRace ? "1px solid #FECACA" : "1px solid #E4E2DD",
+                background: isRace && !isOpen ? "#FFFBFB" : "#fff",
+              }}
+            >
               {/* Week header */}
               <button
+                className="t-wbtn"
                 onClick={() => toggleWeek(wi)}
                 style={{
-                  width: "100%", display: "flex", alignItems: "center",
-                  padding: "14px 16px", background: "none", border: "none",
-                  cursor: "pointer", color: "#e8e0d0", textAlign: "left",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
                   gap: "12px",
+                  minHeight: "64px",
+                  textAlign: "left",
                 }}
               >
+                {/* Badge */}
                 <div style={{
-                  width: "36px", height: "36px", borderRadius: "8px",
-                  background: isRaceWeek ? "#3a0a0a" : "#0d1f35",
-                  border: `1px solid ${isRaceWeek ? "#ff4a4a" : "#1e3a5c"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "11px", fontFamily: "'Courier New', monospace",
-                  color: isRaceWeek ? "#ff4a4a" : "#4a9eff", fontWeight: "bold",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "10px",
                   flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: isRace ? "#FEE2E2"
+                    : weekDone ? "#DCFCE7"
+                    : "#F2F1ED",
+                  fontSize: isRace ? "20px" : "13px",
+                  fontWeight: 700,
+                  fontFamily: "'Syne', sans-serif",
+                  color: isRace ? "#DC2626"
+                    : weekDone ? "#16A34A"
+                    : "#7B7870",
                 }}>
-                  {isRaceWeek ? "🏁" : `W${week.week}`}
+                  {isRace ? "🏁" : weekDone ? "✓" : `W${week.week}`}
                 </div>
+
+                {/* Text */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: "15px", fontWeight: "600", color: weekCompleted ? "#3ddd8a" : "#e8e0d0" }}>
-                      {weekCompleted ? "✓ " : ""}{week.theme}
-                    </span>
+                  <div style={{
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    lineHeight: 1.25,
+                    marginBottom: "3px",
+                    color: isRace ? "#DC2626" : weekDone ? "#16A34A" : "#1A1917",
+                  }}>
+                    {week.theme}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#5a7a9a", fontFamily: "'Courier New', monospace", marginTop: "2px" }}>
+                  <div style={{
+                    fontSize: "12px",
+                    fontWeight: 400,
+                    color: "#A09D96",
+                  }}>
                     {week.dates} · {week.sessions.length} sessions
                   </div>
                 </div>
+
                 {/* Session dots */}
-                <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
-                  {week.sessions.map((s, si) => (
-                    <div key={si} style={{
-                      width: "8px", height: "8px", borderRadius: "50%",
-                      background: completedSessions[`${wi}-${si}`] ? typeColors[s.type].accent : "#1e2a38",
-                      border: `1px solid ${typeColors[s.type].accent}`,
-                      transition: "background 0.2s",
-                    }} />
-                  ))}
+                <div style={{ display: "flex", gap: "5px", flexShrink: 0 }}>
+                  {week.sessions.map((s, si) => {
+                    const done = completedSessions[`${wi}-${si}`];
+                    const t = TYPE[s.type];
+                    return (
+                      <div key={si} style={{
+                        width: "9px",
+                        height: "9px",
+                        borderRadius: "50%",
+                        background: done ? t.color : "transparent",
+                        border: `1.5px solid ${done ? t.color : "#CCC9C3"}`,
+                        transition: "all 0.18s ease",
+                      }} />
+                    );
+                  })}
                 </div>
-                <span style={{ color: "#3a5a7a", fontSize: "16px", flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
+
+                {/* Chevron */}
+                <svg
+                  width="16" height="16" viewBox="0 0 16 16" fill="none"
+                  className={`t-chevron${isOpen ? " t-chevron-open" : ""}`}
+                  style={{ flexShrink: 0, color: "#B0ADA6" }}
+                >
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
 
               {/* Sessions */}
               {isOpen && (
-                <div style={{ borderTop: "1px solid #1e2a38", padding: "4px 0 8px" }}>
+                <div style={{ borderTop: "1px solid #F0EEE9" }}>
                   {week.sessions.map((session, si) => {
                     const key = `${wi}-${si}`;
                     const done = completedSessions[key];
-                    const colors = typeColors[session.type];
+                    const t = TYPE[session.type];
+
                     return (
                       <div
                         key={si}
+                        className="t-sess"
                         onClick={() => toggleSession(key)}
                         style={{
-                          display: "flex", alignItems: "flex-start", gap: "12px",
-                          padding: "10px 16px", cursor: "pointer",
-                          background: done ? `${colors.bg}55` : "transparent",
-                          transition: "background 0.2s",
-                          borderLeft: done ? `3px solid ${colors.accent}` : "3px solid transparent",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "12px",
+                          padding: "12px 16px",
+                          background: done ? t.bg : "transparent",
+                          borderLeft: `3px solid ${done ? t.color : "transparent"}`,
                           marginLeft: "1px",
                         }}
                       >
+                        {/* Icon */}
                         <div style={{
-                          width: "28px", height: "28px", borderRadius: "6px",
-                          background: colors.bg,
-                          border: `1px solid ${colors.accent}33`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "13px", flexShrink: 0, marginTop: "1px",
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "9px",
+                          background: done ? "#fff" : t.bg,
+                          border: `1px solid ${done ? t.color + "30" : "transparent"}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "17px",
+                          flexShrink: 0,
+                          marginTop: "1px",
+                          transition: "all 0.18s ease",
                         }}>
-                          {colors.icon}
+                          {t.icon}
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+
+                        {/* Content */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ marginBottom: "3px" }}>
                             <span style={{
-                              fontSize: "10px", letterSpacing: "1.5px",
-                              fontFamily: "'Courier New', monospace",
-                              color: colors.accent,
-                              background: `${colors.accent}15`,
-                              padding: "2px 6px", borderRadius: "3px",
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              letterSpacing: "0.07em",
+                              color: t.color,
+                              background: done ? "#fff" : t.bg,
+                              padding: "2px 7px",
+                              borderRadius: "4px",
+                              textTransform: "uppercase",
                             }}>
-                              {session.day} · {typeLabel[session.type]}
-                            </span>
-                            <span style={{
-                              fontSize: "14px", fontWeight: "600",
-                              color: done ? "#7aaa8a" : "#ddd8cc",
-                              textDecoration: done ? "line-through" : "none",
-                            }}>
-                              {session.label}
+                              {session.day} · {t.label}
                             </span>
                           </div>
+                          <div style={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            lineHeight: 1.3,
+                            marginBottom: "4px",
+                            color: done ? "#9B9890" : "#1A1917",
+                            textDecoration: done ? "line-through" : "none",
+                            textDecorationColor: "#C5C2BC",
+                          }}>
+                            {session.label}
+                          </div>
                           <p style={{
-                            margin: "4px 0 0", fontSize: "13px",
-                            color: done ? "#4a6a5a" : "#8a9aaa",
-                            lineHeight: "1.5",
+                            margin: 0,
+                            fontSize: "13px",
+                            fontWeight: 400,
+                            color: done ? "#B0ADA6" : "#6B6860",
+                            lineHeight: 1.55,
                           }}>
                             {session.detail}
                           </p>
                         </div>
-                        <div style={{
-                          width: "20px", height: "20px", borderRadius: "50%",
-                          border: `2px solid ${done ? colors.accent : "#2a3a4a"}`,
-                          background: done ? colors.accent : "transparent",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "10px", flexShrink: 0, marginTop: "4px",
-                          transition: "all 0.2s",
-                        }}>
-                          {done && "✓"}
+
+                        {/* Checkmark */}
+                        <div
+                          className={`t-chk${done ? " t-chk-done" : ""}`}
+                          style={{
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "50%",
+                            flexShrink: 0,
+                            marginTop: "6px",
+                            border: `2px solid ${done ? t.color : "#D4D1CB"}`,
+                            background: done ? t.color : "transparent",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {done && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
                         </div>
                       </div>
                     );
@@ -363,16 +547,21 @@ export default function TrainingCalendar() {
           );
         })}
 
-        {/* Footer note */}
+        {/* Footer */}
         <div style={{
-          marginTop: "24px", padding: "16px 20px",
-          background: "rgba(74,158,255,0.06)",
-          border: "1px solid #1e3a5c",
-          borderRadius: "10px",
-          fontSize: "13px", color: "#6a8aaa", lineHeight: "1.7",
-          fontStyle: "italic",
+          marginTop: "8px",
+          padding: "16px 18px",
+          background: "#fff",
+          border: "1px solid #E4E2DD",
+          borderRadius: "16px",
+          fontSize: "13px",
+          fontWeight: 400,
+          color: "#6B6860",
+          lineHeight: 1.6,
+          boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
         }}>
-          <strong style={{ color: "#4a9eff", fontStyle: "normal" }}>Flex rule:</strong> If you get home late, swap or drop that day's session. Consistency over perfection — a missed session is never the end of the world.
+          <span style={{ fontWeight: 700, color: "#1A1917" }}>Flex rule: </span>
+          If you get home late, swap or drop that day's session. Consistency over perfection — a missed session is never the end of the world.
         </div>
       </div>
     </div>
